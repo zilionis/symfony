@@ -12,6 +12,7 @@
 namespace Symfony\Component\DependencyInjection\Tests;
 
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DefinitionTest extends \PHPUnit_Framework_TestCase
 {
@@ -57,14 +58,21 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     {
         $def = new Definition('stdClass');
         $this->assertNull($def->getDecoratedService());
+        $def->setDecoratedService('foo', 'foo.renamed', 5);
+        $this->assertEquals(array('foo', 'foo.renamed', 5), $def->getDecoratedService());
+        $def->setDecoratedService(null);
+        $this->assertNull($def->getDecoratedService());
+
+        $def = new Definition('stdClass');
+        $this->assertNull($def->getDecoratedService());
         $def->setDecoratedService('foo', 'foo.renamed');
-        $this->assertEquals(array('foo', 'foo.renamed'), $def->getDecoratedService());
+        $this->assertEquals(array('foo', 'foo.renamed', 0), $def->getDecoratedService());
         $def->setDecoratedService(null);
         $this->assertNull($def->getDecoratedService());
 
         $def = new Definition('stdClass');
         $def->setDecoratedService('foo');
-        $this->assertEquals(array('foo', null), $def->getDecoratedService());
+        $this->assertEquals(array('foo', null, 0), $def->getDecoratedService());
         $def->setDecoratedService(null);
         $this->assertNull($def->getDecoratedService());
 
@@ -128,8 +136,33 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Symfony\Component\DependencyInjection\Definition::setShared
+     * @covers Symfony\Component\DependencyInjection\Definition::isShared
+     */
+    public function testSetIsShared()
+    {
+        $def = new Definition('stdClass');
+        $this->assertTrue($def->isShared(), '->isShared() returns true by default');
+        $this->assertSame($def, $def->setShared(false), '->setShared() implements a fluent interface');
+        $this->assertFalse($def->isShared(), '->isShared() returns false if the instance must not be shared');
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testPrototypeScopedDefinitionAreNotShared()
+    {
+        $def = new Definition('stdClass');
+        $def->setScope(ContainerInterface::SCOPE_PROTOTYPE);
+
+        $this->assertFalse($def->isShared());
+        $this->assertEquals(ContainerInterface::SCOPE_PROTOTYPE, $def->getScope());
+    }
+
+    /**
      * @covers Symfony\Component\DependencyInjection\Definition::setScope
      * @covers Symfony\Component\DependencyInjection\Definition::getScope
+     * @group legacy
      */
     public function testSetGetScope()
     {

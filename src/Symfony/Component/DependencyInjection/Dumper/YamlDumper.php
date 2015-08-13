@@ -132,15 +132,22 @@ class YamlDumper extends Dumper
             $code .= sprintf("        calls:\n%s\n", $this->dumper->dump($this->dumpValue($definition->getMethodCalls()), 1, 12));
         }
 
-        if (ContainerInterface::SCOPE_CONTAINER !== $scope = $definition->getScope()) {
+        if (!$definition->isShared()) {
+            $code .= "        shared: false\n";
+        }
+
+        if (ContainerInterface::SCOPE_CONTAINER !== $scope = $definition->getScope(false)) {
             $code .= sprintf("        scope: %s\n", $scope);
         }
 
         if (null !== $decorated = $definition->getDecoratedService()) {
-            list($decorated, $renamedId) = $decorated;
+            list($decorated, $renamedId, $priority) = $decorated;
             $code .= sprintf("        decorates: %s\n", $decorated);
             if (null !== $renamedId) {
                 $code .= sprintf("        decoration_inner_name: %s\n", $renamedId);
+            }
+            if (0 !== $priority) {
+                $code .= sprintf("        decoration_priority: %s\n", $priority);
             }
         }
 
@@ -216,7 +223,7 @@ class YamlDumper extends Dumper
     }
 
     /**
-     * Dumps callable to YAML format
+     * Dumps callable to YAML format.
      *
      * @param callable $callable
      *

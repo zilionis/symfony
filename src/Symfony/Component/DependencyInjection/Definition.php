@@ -29,6 +29,7 @@ class Definition
     private $factoryClass;
     private $factoryMethod;
     private $factoryService;
+    private $shared = true;
     private $scope = ContainerInterface::SCOPE_CONTAINER;
     private $properties = array();
     private $calls = array();
@@ -94,6 +95,7 @@ class Definition
      * @return Definition The current instance
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function setFactoryClass($factoryClass)
@@ -111,6 +113,7 @@ class Definition
      * @return string|null The factory class name
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function getFactoryClass($triggerDeprecationError = true)
@@ -130,6 +133,7 @@ class Definition
      * @return Definition The current instance
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function setFactoryMethod($factoryMethod)
@@ -146,12 +150,13 @@ class Definition
      *
      * @param null|string $id        The decorated service id, use null to remove decoration
      * @param null|string $renamedId The new decorated service id
+     * @param int         $priority  The priority of decoration
      *
      * @return Definition The current instance
      *
      * @throws InvalidArgumentException In case the decorated service id and the new decorated service id are equals.
      */
-    public function setDecoratedService($id, $renamedId = null)
+    public function setDecoratedService($id, $renamedId = null, $priority = 0)
     {
         if ($renamedId && $id == $renamedId) {
             throw new \InvalidArgumentException(sprintf('The decorated service inner name for "%s" must be different than the service name itself.', $id));
@@ -160,7 +165,7 @@ class Definition
         if (null === $id) {
             $this->decoratedService = null;
         } else {
-            $this->decoratedService = array($id, $renamedId);
+            $this->decoratedService = array($id, $renamedId, (int) $priority);
         }
 
         return $this;
@@ -169,7 +174,7 @@ class Definition
     /**
      * Gets the service that decorates this service.
      *
-     * @return null|array An array composed of the decorated service id and the new id for it, null if no service is decorated
+     * @return null|array An array composed of the decorated service id, the new id for it and the priority of decoration, null if no service is decorated
      */
     public function getDecoratedService()
     {
@@ -182,6 +187,7 @@ class Definition
      * @return string|null The factory method name
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function getFactoryMethod($triggerDeprecationError = true)
@@ -201,6 +207,7 @@ class Definition
      * @return Definition The current instance
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function setFactoryService($factoryService)
@@ -218,6 +225,7 @@ class Definition
      * @return string|null The factory service id
      *
      * @api
+     *
      * @deprecated since version 2.6, to be removed in 3.0.
      */
     public function getFactoryService($triggerDeprecationError = true)
@@ -598,6 +606,34 @@ class Definition
     }
 
     /**
+     * Sets if the service must be shared or not.
+     *
+     * @param bool $shared Whether the service must be shared or not
+     *
+     * @return Definition The current instance
+     *
+     * @api
+     */
+    public function setShared($shared)
+    {
+        $this->shared = (bool) $shared;
+
+        return $this;
+    }
+
+    /**
+     * Whether this service is shared.
+     *
+     * @return bool
+     *
+     * @api
+     */
+    public function isShared()
+    {
+        return $this->shared;
+    }
+
+    /**
      * Sets the scope of the service.
      *
      * @param string $scope Whether the service must be shared or not
@@ -605,9 +641,19 @@ class Definition
      * @return Definition The current instance
      *
      * @api
+     *
+     * @deprecated since version 2.8, to be removed in 3.0.
      */
-    public function setScope($scope)
+    public function setScope($scope, $triggerDeprecationError = true)
     {
+        if ($triggerDeprecationError) {
+            @trigger_error('The '.__METHOD__.' method is deprecated since version 2.8 and will be removed in 3.0.', E_USER_DEPRECATED);
+        }
+
+        if (ContainerInterface::SCOPE_PROTOTYPE === $scope) {
+            $this->setShared(false);
+        }
+
         $this->scope = $scope;
 
         return $this;
@@ -619,9 +665,15 @@ class Definition
      * @return string
      *
      * @api
+     *
+     * @deprecated since version 2.8, to be removed in 3.0.
      */
-    public function getScope()
+    public function getScope($triggerDeprecationError = true)
     {
+        if ($triggerDeprecationError) {
+            @trigger_error('The '.__METHOD__.' method is deprecated since version 2.8 and will be removed in 3.0.', E_USER_DEPRECATED);
+        }
+
         return $this->scope;
     }
 
