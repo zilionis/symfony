@@ -101,15 +101,10 @@ class TranslationDataCollector extends DataCollector implements LateDataCollecto
 
             if (!isset($result[$messageId])) {
                 $message['count'] = 1;
-                $message['parameters'] = !empty($message['parameters']) ? array($message['parameters']) : array();
                 $messages[$key]['translation'] = $this->sanitizeString($message['translation']);
                 $result[$messageId] = $message;
             } else {
-                if (!empty($message['parameters'])) {
-                    $result[$messageId]['parameters'][] = $message['parameters'];
-                }
-
-                $result[$messageId]['count']++;
+                ++$result[$messageId]['count'];
             }
 
             unset($messages[$key]);
