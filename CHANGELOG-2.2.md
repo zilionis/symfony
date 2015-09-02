@@ -1,4 +1,4 @@
-s.CHANGELOG for 2.2.x
+ss.CHANGELOG for 2.2.x
 ===================
 
 This changelog references the relevant changes (bug and security fixes) done
